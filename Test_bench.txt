@@ -1,0 +1,77 @@
+// Code your testbench here
+// or browse Examples
+module tb_vedic_8x8;
+
+    // Inputs
+    reg [7:0] a;
+    reg [7:0] b;
+
+    // Outputs
+    wire [15:0] p;
+    
+    // Loop variable
+    integer i;
+    integer error_count = 0;
+
+    // Instantiate the Unit Under Test (UUT)
+    vedic_8x8 uut (
+        .a(a), 
+        .b(b), 
+        .p(p)
+    );
+
+    initial begin
+        // Setup for EDA Playground waveform generation
+        $dumpfile("dump.vcd");
+        $dumpvars(0, tb_vedic_8x8);
+
+        $display("--- Starting Functional Simulation ---");
+
+        // Directed Test 1: Zeros
+        a = 8'd0; b = 8'd0; #10;
+        check_result(a, b, p);
+
+        // Directed Test 2: Maximum Values
+        a = 8'd255; b = 8'd255; #10;
+        check_result(a, b, p);
+
+        // Directed Test 3: Mixed
+        a = 8'd15; b = 8'd15; #10;
+        check_result(a, b, p);
+
+        // Automated Random Testing (100 iterations)
+        for (i = 0; i < 10; i = i + 1) begin
+            a = $random % 256;
+            b = $random % 256;
+            #10;
+            check_result(a, b, p);
+        end
+
+        // Simulation Summary
+        if (error_count == 0)
+            $display("--- SUCCESS: All tests passed with 0 errors! ---");
+        else
+            $display("--- FAILED: %0d errors found ---", error_count);
+
+        $finish;
+    end
+
+    // Task to automatically check results
+    task check_result;
+        input [7:0] in_a;
+        input [7:0] in_b;
+        input [15:0] out_p;
+        reg [15:0] expected;
+        begin
+            expected = in_a * in_b;
+            if (out_p !== expected) begin
+                $display("ERROR at time %0t: %0d * %0d = %0d (Expected: %0d)", $time, in_a, in_b, out_p, expected);
+                error_count = error_count + 1;
+            end else begin
+                // Uncomment the line below to print every successful multiplication
+                // $display("PASS: %0d * %0d = %0d", in_a, in_b, out_p);
+            end
+        end
+    endtask
+
+endmodule
